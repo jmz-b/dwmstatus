@@ -1,4 +1,4 @@
-#define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,9 +12,7 @@
 
 #include <X11/Xlib.h>
 
-char *tzargentina = "America/Buenos_Aires";
-char *tzutc = "UTC";
-char *tzberlin = "Europe/Berlin";
+char *tzlondon = "Europe/London";
 
 static Display *dpy;
 
@@ -79,27 +77,11 @@ setstatus(char *str)
 	XSync(dpy, False);
 }
 
-char *
-loadavg(void)
-{
-	double avgs[3];
-
-	if (getloadavg(avgs, 3) < 0) {
-		perror("getloadavg");
-		exit(1);
-	}
-
-	return smprintf("%.2f %.2f %.2f", avgs[0], avgs[1], avgs[2]);
-}
-
 int
 main(void)
 {
 	char *status;
-	char *avgs;
-	char *tmar;
-	char *tmutc;
-	char *tmbln;
+	char *tmldn;
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -107,18 +89,11 @@ main(void)
 	}
 
 	for (;;sleep(90)) {
-		avgs = loadavg();
-		tmar = mktimes("%H:%M", tzargentina);
-		tmutc = mktimes("%H:%M", tzutc);
-		tmbln = mktimes("KW %W %a %d %b %H:%M %Z %Y", tzberlin);
+		tmldn = mktimes("%W %a %d %b %H:%M", tzlondon);
 
-		status = smprintf("L:%s A:%s U:%s %s",
-				avgs, tmar, tmutc, tmbln);
+		status = smprintf("%s %s", tmldn);
 		setstatus(status);
-		free(avgs);
-		free(tmar);
-		free(tmutc);
-		free(tmbln);
+		free(tmldn);
 		free(status);
 	}
 
@@ -126,4 +101,3 @@ main(void)
 
 	return 0;
 }
-
