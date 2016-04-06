@@ -13,6 +13,7 @@
 #include <X11/Xlib.h>
 
 char *tzlondon = "Europe/London";
+char *sysbat = "/sys/class/power_supply/BAT0/capacity";
 
 static Display *dpy;
 
@@ -70,6 +71,22 @@ mktimes(char *fmt, char *tzname)
 	return smprintf("%s", buf);
 }
 
+char *
+batcap(void)
+{
+	char cap[16], *r = NULL;
+	FILE *f = fopen(sysbat, "r");
+
+	memset(cap, 1, sizeof cap);
+	if (f) {
+		r = fgets(cap, sizeof cap, f);
+		if (r == cap)
+			cap[strlen(cap)-1] = '\0';
+		fclose(f);
+	}
+	return smprintf("%s%%", r != NULL ? r : "?");
+}
+
 void
 setstatus(char *str)
 {
@@ -82,6 +99,7 @@ main(void)
 {
 	char *status;
 	char *tmldn;
+	char *cap;
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -90,8 +108,9 @@ main(void)
 
 	for (;;sleep(90)) {
 		tmldn = mktimes("%W %a %d %b %H:%M", tzlondon);
+		cap = batcap();
 
-		status = smprintf("%s %s", tmldn);
+		status = smprintf("%s | %s", tmldn, cap);
 		setstatus(status);
 		free(tmldn);
 		free(status);
