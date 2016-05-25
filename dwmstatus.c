@@ -107,7 +107,7 @@ main(void)
 	}
 
 	for (;;sleep(90)) {
-		tmldn = mktimes("%W %a %d %b %H:%M", tzlondon);
+		tmldn = mktimes("%a %d %b %H:%M", tzlondon);
 		cap = batcap();
 
 		status = smprintf("%s | %s", tmldn, cap);
